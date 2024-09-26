@@ -12,10 +12,10 @@ tz = ZoneInfo(TZ_INFO)
 
 def get_db_connection():
     return psycopg2.connect(
-        host=os.getenv("POSTGRES_HOST", "localhost"),
-        database=os.getenv("POSTGRES_DB", "student"),
-        user=os.getenv("POSTGRES_USER", "postgres"),
-        password=os.getenv("POSTGRES_PASSWORD", "postgres")
+        host=os.getenv("POSTGRES_HOST"),
+        database=os.getenv("POSTGRES_DB"),
+        user=os.getenv("POSTGRES_USER"),
+        password=os.getenv("POSTGRES_PASSWORD")
     )
 
 
@@ -23,21 +23,13 @@ def init_db():
     conn = get_db_connection()
     try:
         with conn.cursor() as cur:
-            cur.execute("DROP TABLE IF EXISTS Student_performance")
+            #cur.execute("DROP TABLE IF EXISTS performance")
 
             cur.execute("""
-                CREATE TABLE Student_performance (
-                    StudentID	int,
-                    Name	varchar(50),
-                    Gender varchar(5),	
-                    AttendanceRate int,	
-                    StudyHoursPerWeek	int,
-                    PreviousGrade int,	
-                    ExtracurricularActivities int,
-                    ParentalSupport varchar(5),	
-                    FinalGrade int
-           )
+           select count(1) from performance;
             """)
+            count = cur.fetchone()[0]
+            print(f'The number of rows in the table is:{count}')
         conn.commit()
     finally:
         conn.close()
@@ -131,54 +123,54 @@ def init_db():
 #         conn.close()
 
 
-def check_timezone():
-    conn = get_db_connection()
-    try:
-        with conn.cursor() as cur:
-            cur.execute("SHOW timezone;")
-            db_timezone = cur.fetchone()[0]
-            print(f"Database timezone: {db_timezone}")
+# def check_timezone():
+#     conn = get_db_connection()
+#     try:
+#         with conn.cursor() as cur:
+#             cur.execute("SHOW timezone;")
+#             db_timezone = cur.fetchone()[0]
+#             print(f"Database timezone: {db_timezone}")
 
-            cur.execute("SELECT current_timestamp;")
-            db_time_utc = cur.fetchone()[0]
-            print(f"Database current time (UTC): {db_time_utc}")
+#             cur.execute("SELECT current_timestamp;")
+#             db_time_utc = cur.fetchone()[0]
+#             print(f"Database current time (UTC): {db_time_utc}")
 
-            db_time_local = db_time_utc.astimezone(tz)
-            print(f"Database current time ({TZ_INFO}): {db_time_local}")
+#             db_time_local = db_time_utc.astimezone(tz)
+#             print(f"Database current time ({TZ_INFO}): {db_time_local}")
 
-            py_time = datetime.now(tz)
-            print(f"Python current time: {py_time}")
+#             py_time = datetime.now(tz)
+#             print(f"Python current time: {py_time}")
 
-            # Use py_time instead of tz for insertion
-            # cur.execute("""
-            #     INSERT INTO conversations 
-            #     (id, question, answer, model_used, response_time, relevance, 
-            #     relevance_explanation, prompt_tokens, completion_tokens, total_tokens, 
-            #     eval_prompt_tokens, eval_completion_tokens, eval_total_tokens, openai_cost, timestamp)
-            #     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-            #     RETURNING timestamp;
-            # """, 
-            # ('test', 'test question', 'test answer', 'test model', 0.0, 0.0, 
-            #  'test explanation', 0, 0, 0, 0, 0, 0, 0.0, py_time))
+#             # Use py_time instead of tz for insertion
+#             # cur.execute("""
+#             #     INSERT INTO conversations 
+#             #     (id, question, answer, model_used, response_time, relevance, 
+#             #     relevance_explanation, prompt_tokens, completion_tokens, total_tokens, 
+#             #     eval_prompt_tokens, eval_completion_tokens, eval_total_tokens, openai_cost, timestamp)
+#             #     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+#             #     RETURNING timestamp;
+#             # """, 
+#             # ('test', 'test question', 'test answer', 'test model', 0.0, 0.0, 
+#             #  'test explanation', 0, 0, 0, 0, 0, 0, 0.0, py_time))
 
-            # inserted_time = cur.fetchone()[0]
-            # print(f"Inserted time (UTC): {inserted_time}")
-            # print(f"Inserted time ({TZ_INFO}): {inserted_time.astimezone(tz)}")
+#             # inserted_time = cur.fetchone()[0]
+#             # print(f"Inserted time (UTC): {inserted_time}")
+#             # print(f"Inserted time ({TZ_INFO}): {inserted_time.astimezone(tz)}")
 
-            # cur.execute("SELECT timestamp FROM conversations WHERE id = 'test';")
-            # selected_time = cur.fetchone()[0]
-            # print(f"Selected time (UTC): {selected_time}")
-            # print(f"Selected time ({TZ_INFO}): {selected_time.astimezone(tz)}")
+#             # cur.execute("SELECT timestamp FROM conversations WHERE id = 'test';")
+#             # selected_time = cur.fetchone()[0]
+#             # print(f"Selected time (UTC): {selected_time}")
+#             # print(f"Selected time ({TZ_INFO}): {selected_time.astimezone(tz)}")
 
-            # # Clean up the test entry
-            # cur.execute("DELETE FROM conversations WHERE id = 'test';")
-            # conn.commit()
-    except Exception as e:
-        print(f"An error occurred: {e}")
-        conn.rollback()
-    finally:
-        conn.close()
+#             # # Clean up the test entry
+#             # cur.execute("DELETE FROM conversations WHERE id = 'test';")
+#             # conn.commit()
+#     except Exception as e:
+#         print(f"An error occurred: {e}")
+#         conn.rollback()
+#     finally:
+#         conn.close()
 
 
-if RUN_TIMEZONE_CHECK:
-    check_timezone()
+# if RUN_TIMEZONE_CHECK:
+#     check_timezone()
